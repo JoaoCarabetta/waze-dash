@@ -7,7 +7,7 @@
 #
 
 # Your App's title
-TITLE = 'Slapdash'
+TITLE = 'Waze Dashboard'
 
 ROUTES_PATHNAME_PREFIX = '/'
 
