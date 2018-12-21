@@ -1,7 +1,5 @@
 from . import create_app, create_dash
 from .layouts import main_layout_header, main_layout_fullpage
-#from flask_caching import Cache
-
 
 # The Flask instance
 server = create_app()
