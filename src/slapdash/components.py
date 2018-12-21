@@ -4,6 +4,13 @@ import dash_html_components as html
 
 from .utils import component, get_url
 
+def _merge(a, b):
+    return dict(a, **b)
+
+
+def _omit(omitted_keys, d):
+    return {k: v for k, v in d.items() if k not in omitted_keys}
+
 
 @component
 def Row(children=None, **kwargs):
@@ -22,6 +29,24 @@ def Col(children=None, bp=None, size=None, **kwargs):
         col_class = f'col-{bp}-{size}'
     return html.Div(children=children, className=col_class, **kwargs)
 
+
+def Card(children, **kwargs):
+    return html.Section(
+        children,
+        style=_merge({
+            'padding': 20,
+            'margin': 5,
+            'borderRadius': 5,
+            'border': 'thin lightgrey solid',
+
+            # Remove possibility to select the text for better UX
+            'user-select': 'none',
+            '-moz-user-select': 'none',
+            '-webkit-user-select': 'none',
+            '-ms-user-select': 'none'
+        }, kwargs.get('style', {})),
+        **_omit(['style'], kwargs)
+    )
 
 @component
 def Header(children=None, **kwargs):

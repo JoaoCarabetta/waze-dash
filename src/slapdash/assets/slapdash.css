@@ -1,6 +1,6 @@
 body {
     /* Problem is that this needs to only apply for top navbar*/
-    padding-top: 4.5rem;
+    /* padding-top: 4.5rem;*/
 }
 
 
@@ -22,7 +22,7 @@ header {margin-left: 0.5em;}
 /* Header*/
 
 #header {
-    background-color: black;
+    background-color: white;
     color: white;
     display: flex;
     position: fixed;
@@ -30,29 +30,51 @@ header {margin-left: 0.5em;}
     right: 0;
     left: 0;
     z-index: 1010;
+    height: 0px;
+    
 }
 
-#header a {color: white !important;}
+#header a {color: transparent !important;}
 
 #header h1 {
     margin-bottom: 0;
     line-height: inherit;
-    color: white;
+    color: transparent;
 }
 
 #header .nav-item {font-size: 1.1em;}
 #header .navbar a:hover, .navbar a:focus {text-decoration: underline}
 #header .nav-item.active {text-decoration: underline}
 
-
-/* Sidebar */
-#sidebar {
-    background-color: black;
-    color: white;
+.card {
+    background-color: white;
+    width: 330px;
+    top: 50px;
 }
 
-#sidebar .navbar a:hover, .navbar a:focus {text-decoration: underline}
-#sidebar .nav-item.active {text-decoration: underline}
+.card-header {
+    background-color: white;
+}
+
+.card-header-title {
+    font-size: 1.6em;
+}
+
+.rc-slider-with-marks {
+  margin-bottom: 1.5em;
+}
+
+._dash-undo-redo {
+    display: none;
+}
+
+.table {
+    padding-top: 220px;
+}
+
+
+
+
 
 
 
