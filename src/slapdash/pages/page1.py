@@ -107,7 +107,7 @@ def update_graph2(end_date):
 def read_json(data):
     return pd.read_json(json.loads(data), orient='columns')
 
-@cache.memoize()
+# @cache.memoize()
 def process_info(start_date, end_date, hour_range, dow_checklist):
     con = connect_db()
     query = """
