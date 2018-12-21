@@ -45,11 +45,16 @@ def component(func):
 def connect_db():
 
     try:
+        print('HEHEHEHEHHEHEHEHEHE')
+        print('-------------------')
+        print('-------------------')
+        print(os.environ['DBURL'])
         url = os.environ['DBURL']
+        print('Funcionou')
     except:
         url = open(Path(__file__).parent / 'redshift_key.txt', 'r').read()
     
-    con = sa.create_engine(url)
+    return sa.create_engine(url)
 
 def to_deck_line(df, segment_column,
                  color_column, color_low, color_high, 

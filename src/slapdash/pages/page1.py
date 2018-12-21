@@ -10,7 +10,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, State, Output
 
-from ..app import app, cache
+from ..app import app
 from ..components import Col, Row, Card
 from ..utils import to_deck_line, connect_db
 
@@ -109,7 +109,14 @@ def read_json(data):
 
 # @cache.memoize()
 def process_info(start_date, end_date, hour_range, dow_checklist):
+    print('PAGE1 EHEHE')
+    print('-------------------')
+    print('-------------------')
+    import os
+    print(os.environ)
+    print(os.environ['DBURL'])
     con = connect_db()
+    print(con)
     query = """
         SELECT
             segment,

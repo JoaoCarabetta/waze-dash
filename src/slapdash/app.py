@@ -9,15 +9,6 @@ server = create_app()
 # The Dash instance
 app = create_dash(server)
 
-CACHE_CONFIG = {
-    # try 'filesystem' if you don't want to setup redis
-    'CACHE_TYPE': 'filesystem',
-    'CACHE_DIR': '/Users/joaoc/Documents/projects/slapdash/cache'
-}
-# cache = Cache()
-# cache.init_app(app.server, config=CACHE_CONFIG)g
-
-
 # Push an application context so we can use Flask's 'current_app'
 with server.app_context():
     # load the rest of our Dash app
