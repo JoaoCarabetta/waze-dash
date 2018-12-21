@@ -2,6 +2,9 @@ from flask import current_app as server
 from functools import wraps
 from colour import Color
 import ast
+import os
+import sqlalchemy as sa
+from pathlib import Path
 
 
 def get_url(path):
@@ -39,6 +42,14 @@ def component(func):
         return result
     return function_wrapper
 
+def connect_db():
+
+    try:
+        url = os.environ['DBURL']
+    except:
+        url = open(Path(__file__).parent / 'redshift_key.txt', 'r').read()
+    
+    con = sa.create_engine(url)
 
 def to_deck_line(df, segment_column,
                  color_column, color_low, color_high, 
@@ -49,7 +60,6 @@ def to_deck_line(df, segment_column,
     if isinstance(color_column, str):
         color_true = True
         color_max_value = df[color_column].max()
-        print(df[color_column].mean())
         color_range = list(Color(rgb=color_low).range_to(Color(rgb=color_high), color_steps))
         color_range = list(map(lambda hues: list(map(lambda x: x * 255, hues.rgb)), color_range))
 

@@ -12,7 +12,7 @@ from dash.dependencies import Input, State, Output
 
 from ..app import app, cache
 from ..components import Col, Row, Card
-from ..utils import to_deck_line
+from ..utils import to_deck_line, connect_db
 
 import pandas as pd
 import sqlalchemy as sa
@@ -102,14 +102,14 @@ layout = html.Div([
 @app.callback(Output("date_range", "children"),
               [Input("date-picker-range", "end_date")],)
 def update_graph2(end_date):
-    con = sa.create_engine(open(Path(__file__).parent / 'redshift_key.txt', 'r').read())
+    con = connect_db()
     
 def read_json(data):
     return pd.read_json(json.loads(data), orient='columns')
 
 @cache.memoize()
 def process_info(start_date, end_date, hour_range, dow_checklist):
-    con = sa.create_engine(open(Path(__file__).parent / 'redshift_key.txt', 'r').read())
+    con = connect_db()
     query = """
         SELECT
             segment,
@@ -248,7 +248,7 @@ def update_table_columns(columns, pagination_settings, filtering_settings,
 
 @app.server.before_first_request
 def get_date_range():
-    con = sa.create_engine(open(Path(__file__).parent / 'redshift_key.txt', 'r').read())
+    con = connect_db()
 
 
 
