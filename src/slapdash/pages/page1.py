@@ -17,30 +17,51 @@ from ..utils import to_deck_line, connect_db
 import pandas as pd
 import sqlalchemy as sa
 
-from deckglplotly import line
+from deckglplotly import LineLayer
 
 PAGE_SIZE = 30
 
 layout = html.Div([
-    line(id='map',
-         initial_longitude=-56.256744, 
-         initial_latitude=-34.8749, 
-         initial_zoom=13,
-         data=[],
-         mapboxtoken='pk.eyJ1IjoiYWxpc2hvYmVpcmkiLCJhIjoiY2ozYnM3YTUxMDAxeDMzcGNjbmZyMmplZiJ9.ZjmQ0C2MNs1AzEBC_Syadg',),
+    html.Div(
+        html.Div(
+            children=LineLayer(id='map',
+                longitude=-56.256744, 
+                latitude=-34.8749, 
+                zoom=12,
+                data=[],
+                mapboxtoken='pk.eyJ1IjoiYWxpc2hvYmVpcmkiLCJhIjoiY2ozYnM3YTUxMDAxeDMzcGNjbmZyMmplZiJ9.ZjmQ0C2MNs1AzEBC_Syadg',),
+            id='map-inner'
+        ),
+        id='map-keeper'
+    ),
     html.Div([
         Card([
             ## Header
             html.Div([
                 html.Div('Painel', className='card-header-title')],
                      className='card-header'),
+            
+            html.Div([
+                html.Div('Select a city:', className='subtitle'),
+                dcc.Dropdown(
+                    id='cities-dropdown',
+                    options=[
+                    {'label': 'Montevideo', 'value': 'montevideo'},
+                    {'label': 'São Paulo', 'value': 'sao_paulo'},
+                    {'label': 'Miraflores', 'value': 'miraflores'},
+                    {'label': 'Xalapa', 'value': 'xalapa'},
+                    {'label': 'Quito', 'value': 'quito'},
+                    ], 
+                    value='miraflores'
+                )
+            ]),
             ## Date Picker
             html.Div([        
                 html.Div('Select a date:', className='subtitle'),
                 dcc.DatePickerRange(
                     id='date-picker-range',
-                    start_date=dt(2018,9,30),
-                    end_date=dt(2018,10,1),
+                    start_date=dt(2018,12,25),
+                    end_date=dt(2018,12,27),
                     end_date_placeholder_text='Select a date!'
                 ),], className='datepicker-container'),
 
@@ -96,47 +117,41 @@ layout = html.Div([
         className='table'),
     ]),
     dcc.Store(id='signal'),
-    dcc.Store(id='date_range')
+    dcc.Store(id='date_range'),
+    dcc.Store(id='city_viewport')
 ])
 
-@app.callback(Output("date_range", "children"),
-              [Input("date-picker-range", "end_date")],)
-def update_graph2(end_date):
-    con = connect_db()
+
     
 def read_json(data):
     return pd.read_json(json.loads(data), orient='columns')
 
 # @cache.memoize()
-def process_info(start_date, end_date, hour_range, dow_checklist):
-    print('PAGE1 EHEHE')
-    print('-------------------')
-    print('-------------------')
-    import os
-    print(os.environ)
-    print(os.environ['DBURL'])
+def process_info(start_date, end_date, hour_range, dow_checklist, city):
+
     con = connect_db()
-    print(con)
+    from datetime import datetime
+
+    days = (datetime.strptime(end_date, '%Y-%m-%d') - 
+            datetime.strptime(start_date, '%Y-%m-%d')).days
+
     query = """
         SELECT
             segment,
             street,
-            max(segment_length) as segment_length,
-            sum(minutes_with_jam) / (count(*) * 0.6)  as with_jam_prop,   
-            sum(minutes_with_jam) / count(*) * ({end_hour} - {start_hour} + 1) as with_jam_total,   
-            avg(segment_delay_sum) as lost_time_mean,  
-            sum(segment_delay_sum) as lost_time_total, 
-            avg(length_avg) as m_jam_mean,            
-            max(length_max) as m_jam_max              
-        from waze_dev.jams_segment_per_hour
+            avg(length_max) as segment_length,
+            sum(minutes_with_jam)  as with_jam_total,   
+            sum(minutes_with_jam) / (({end_hour} - {start_hour} + 1) * {days} * 0.6) as with_jam_prop           
+        from waze_painel.{city}_jams_segment_per_hour
         where hour between {start_hour} and {end_hour}
         and   dtm_hour between '{start_date}' and '{end_date}'
-        and   dow in ({dow})
         group by segment, street""".format(start_hour=hour_range[0],
                                            end_hour=hour_range[1],
                                            start_date=start_date,
                                            end_date=end_date,
-                                           dow=','.join(map(str, dow_checklist)))
+                                           dow=','.join(map(str, dow_checklist)),
+                                           city=city,
+                                           days=days)
     df = pd.read_sql_query(query, con)
     
     df['segment'] = df['segment'].apply(ast.literal_eval)
@@ -153,13 +168,18 @@ def process_info(start_date, end_date, hour_range, dow_checklist):
               [State("date-picker-range", 'start_date'),
                State("date-picker-range", 'end_date'),
                State("hour-range-slider", 'value'),
-               State('dow-checklist', 'values')]) 
-def get_info(n_clicks, start_date, end_date, hour_range, dow_checklist):
+               State('dow-checklist', 'values'),
+               State('cities-dropdown', 'value')]) 
+def get_info(n_clicks, start_date, end_date, hour_range, dow_checklist,
+            city):
 
-    value = process_info(start_date, end_date, hour_range, dow_checklist)
+    print('n_clicks: ', n_clicks)
+
+    print('getting info')
+    value = process_info(start_date, end_date, hour_range, dow_checklist, city)
 
     return value
-
+    
 @app.callback(Output("phrase-markdown", "children"),
               [Input("signal", "data")],
               [State('problems-dropdown', 'value'),
@@ -175,29 +195,64 @@ def update_markdown(df, problem, hour_range):
 
 There are {worst_segments} segments that always get jammed""".format(
                         total_segments=len(df),
-                        worst_segments=len(df[df['with_jam_total'] > 90]), 
-                        length=round(df['segment_length'].sum() / 1000, 0),
+                        worst_segments=len(df[df['with_jam_prop'] > 90]), 
+                        length=round(df[df['with_jam_prop'] > 10]['segment_length'].sum() / 1000, 0),
                         start_hour=hour_range[0],
                         end_hour=hour_range[1])
         return markdown
 
-@app.callback(Output("map", "data"),
-              [Input("signal", "data")],
-              [State('problems-dropdown', 'value')])
-def update_graph(df, problem):
+
+def get_city_viewport(city):
+
+    con = connect_db()
+
+    query = """
+            select initial_zoom, initial_lat, initial_lon
+            from waze.cities_stats
+            where city='{city}'
+            """.format(city=city)
+
+    return pd.read_sql_query(query, con).to_dict('records')[0]
+
+@app.callback(Output('map-keeper', 'children'),
+              [Input('signal', 'data')])
+def clean_graph(data):
+
+    if data is not None:
+        print('clean')
+        return html.Div(id='map-inner')
+
+@app.callback(Output("map-inner", "children"),
+                [Input('date_range', 'data')],
+              [State("signal", "data"),
+               State('problems-dropdown', 'value'),
+               State('cities-dropdown', 'value')])
+def update_graph(useless, df, problem, city):
 
     grey = [1,1,1]
     red = [1.0, 0.0, 0.0]
 
     df = read_json(df)
+    # import time
+    # time.sleep(2)
 
     data = to_deck_line(df, 'segment', 'with_jam_prop', grey, red, 
                         3, width_low=None, width_high=None,
                         legend_column='with_jam_prop', 
                         legend_title='Proportional Time Jammed (%)')
-    
-    return data
 
+    viewstate = get_city_viewport(city)
+
+    print('city: ', city)
+    print('viewstate: ', viewstate)
+
+    return LineLayer(
+            id='map',
+            longitude=float(viewstate['initial_lon']), 
+            latitude=float(viewstate['initial_lat']) -  ,  
+            zoom=float(viewstate['initial_zoom']), 
+            data=data,
+            mapboxtoken='pk.eyJ1IjoiYWxpc2hvYmVpcmkiLCJhIjoiY2ozYnM3YTUxMDAxeDMzcGNjbmZyMmplZiJ9.ZjmQ0C2MNs1AzEBC_Syadg',)
 
 @app.callback(Output("table", "columns"),
               [Input("signal", "data")],

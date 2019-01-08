@@ -45,12 +45,8 @@ def component(func):
 def connect_db():
 
     try:
-        print('HEHEHEHEHHEHEHEHEHE')
-        print('-------------------')
-        print('-------------------')
-        print(os.environ['DBURL'])
+
         url = os.environ['DBURL']
-        print('Funcionou')
     except:
         url = open(Path(__file__).parent / 'redshift_key.txt', 'r').read()
     
