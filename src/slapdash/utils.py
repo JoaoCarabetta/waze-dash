@@ -29,7 +29,9 @@ def component(func):
 
         if className is not None:
             if hasattr(result, 'className'):
-                result.className = f'{className} {result.className}'
+                result.className = '{} {}'.format(
+                    className, result.className
+                )
             else:
                 result.className = className
 
