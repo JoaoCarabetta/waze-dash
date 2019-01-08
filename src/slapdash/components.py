@@ -93,10 +93,10 @@ def Navbar(
         ))
 
     return html.Nav(
-        className=f'navbar',
+        className=navbar,
         children=[
             html.Ul(
-                className=f'nav',
+                className=nav,
                 children=nav_items
             ),
         ],
