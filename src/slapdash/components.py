@@ -24,9 +24,9 @@ def Col(children=None, bp=None, size=None, **kwargs):
     if size is None and bp is None:
         col_class = 'col'
     elif bp is None:
-        col_class = f'col-{size}'
+        col_class = 'col-{}'.format(size)
     else:        
-        col_class = f'col-{bp}-{size}'
+        col_class = 'col-{}-{}'.format(bp, size)
     return html.Div(children=children, className=col_class, **kwargs)
 
 
