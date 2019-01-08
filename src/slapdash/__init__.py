@@ -2,7 +2,7 @@ from flask import Flask
 from dash import Dash
 
 
-def create_app(config_object=f'{__package__}.settings'):
+def create_app(config_object='{}.settings'.format(__package__)):
     server = Flask(__package__)
     
     # load default settings
