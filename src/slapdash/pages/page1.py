@@ -249,7 +249,7 @@ def update_graph(useless, df, problem, city):
     return LineLayer(
             id='map',
             longitude=float(viewstate['initial_lon']), 
-            latitude=float(viewstate['initial_lat']) -  ,  
+            latitude=float(viewstate['initial_lat']),  
             zoom=float(viewstate['initial_zoom']), 
             data=data,
             mapboxtoken='pk.eyJ1IjoiYWxpc2hvYmVpcmkiLCJhIjoiY2ozYnM3YTUxMDAxeDMzcGNjbmZyMmplZiJ9.ZjmQ0C2MNs1AzEBC_Syadg',)

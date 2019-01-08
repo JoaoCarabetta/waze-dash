@@ -64,7 +64,7 @@ def Header(children=None, **kwargs):
 
 def Fa(name):
     """A convenience component for adding Font Awesome icons"""
-    return html.I(className=f"fa fa-{name}")
+    return html.I(className="fa fa-{}".format(name))
 
 
 @component

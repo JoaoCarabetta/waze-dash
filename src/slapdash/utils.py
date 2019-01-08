@@ -9,7 +9,7 @@ from pathlib import Path
 
 def get_url(path):
     """Expands an internal URL to include prefix the app is mounted at"""
-    return f"{server.config['ROUTES_PATHNAME_PREFIX']}{path}"
+    return "{server.config['ROUTES_PATHNAME_PREFIX']}{}".format(path)
 
 
 def component(func):
