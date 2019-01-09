@@ -80,7 +80,14 @@ layout = html.Div([
                 id='hour-range-slider',
                 min=0,
                 max=23,
-                value=[7, 9]
+                value=[7, 9],
+                marks={
+                    0: '0 h',
+                    6: '6 h',
+                    12: '12 h',
+                    18: '18 h',
+                    23: '24 h'
+                }
             ),
             html.Div('Select a question:', className='subtitle'),
             dcc.Dropdown(
