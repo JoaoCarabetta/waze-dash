@@ -33,7 +33,7 @@ layout = html.Div([
         Card([
             ## Header
             html.Div([
-                html.Div('City Dashboard', className='card-header-title')],
+                html.Div('Where is the traffic?', className='card-header-title')],
                      className='card-header'),
             
             html.Div([
