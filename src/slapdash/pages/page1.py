@@ -20,16 +20,11 @@ import sqlalchemy as sa
 from deckglplotly import LineLayer
 
 PAGE_SIZE = 30
+CURRENT_CITY = 'miraflores'
 
 layout = html.Div([
     html.Div(
         html.Div(
-            children=LineLayer(id='map',
-                longitude=-56.256744, 
-                latitude=-34.8749, 
-                zoom=12,
-                data=[],
-                mapboxtoken='pk.eyJ1IjoiYWxpc2hvYmVpcmkiLCJhIjoiY2ozYnM3YTUxMDAxeDMzcGNjbmZyMmplZiJ9.ZjmQ0C2MNs1AzEBC_Syadg',),
             id='map-inner'
         ),
         id='map-keeper'
@@ -38,7 +33,7 @@ layout = html.Div([
         Card([
             ## Header
             html.Div([
-                html.Div('Painel', className='card-header-title')],
+                html.Div('City Dashboard', className='card-header-title')],
                      className='card-header'),
             
             html.Div([
@@ -47,12 +42,12 @@ layout = html.Div([
                     id='cities-dropdown',
                     options=[
                     {'label': 'Montevideo', 'value': 'montevideo'},
-                    {'label': 'São Paulo', 'value': 'sao_paulo'},
+                    # {'label': 'São Paulo', 'value': 'sao_paulo'},
                     {'label': 'Miraflores', 'value': 'miraflores'},
                     {'label': 'Xalapa', 'value': 'xalapa'},
                     {'label': 'Quito', 'value': 'quito'},
                     ], 
-                    value='miraflores'
+                    value='montevideo'
                 )
             ]),
             ## Date Picker
@@ -60,8 +55,8 @@ layout = html.Div([
                 html.Div('Select a date:', className='subtitle'),
                 dcc.DatePickerRange(
                     id='date-picker-range',
-                    start_date=dt(2018,12,25),
-                    end_date=dt(2018,12,27),
+                    start_date=dt(2018,12,20),
+                    end_date=dt(2018,12,25),
                     end_date_placeholder_text='Select a date!'
                 ),], className='datepicker-container'),
 
@@ -85,15 +80,15 @@ layout = html.Div([
                 id='hour-range-slider',
                 min=0,
                 max=23,
-                value=[0, 4]
+                value=[7, 9]
             ),
             html.Div('Select a question:', className='subtitle'),
             dcc.Dropdown(
                 id='problems-dropdown',
                 options=[
                     {'label': 'Which segments are always congested?', 'value': 'perc'},
-                    {'label': 'Where do people lose more time?', 'value': 'time'},
-                    {'label': 'What are the longest jams?', 'value': 'size'}
+                    # {'label': 'Where do people lose more time?', 'value': 'time'},
+                    # {'label': 'What are the longest jams?', 'value': 'size'}
                 ],
                 value='perc'
             ),
@@ -118,6 +113,7 @@ layout = html.Div([
     ]),
     dcc.Store(id='signal'),
     dcc.Store(id='date_range'),
+    html.Div(id='current_city', style={'display': 'none'}, children='miraflores'),
     dcc.Store(id='city_viewport')
 ])
 
@@ -193,9 +189,9 @@ def update_markdown(df, problem, hour_range):
         markdown = """
 {length}km of roads usually get jammed between {start_hour} and {end_hour} hours
 
-There are {worst_segments} segments that always get jammed""".format(
+There are {worst_segments} road segments that usually get jammed""".format(
                         total_segments=len(df),
-                        worst_segments=len(df[df['with_jam_prop'] > 90]), 
+                        worst_segments=len(df[df['with_jam_prop'] > 50]), 
                         length=round(df[df['with_jam_prop'] > 10]['segment_length'].sum() / 1000, 0),
                         start_hour=hour_range[0],
                         end_hour=hour_range[1])
@@ -215,12 +211,25 @@ def get_city_viewport(city):
     return pd.read_sql_query(query, con).to_dict('records')[0]
 
 @app.callback(Output('map-keeper', 'children'),
-              [Input('signal', 'data')])
-def clean_graph(data):
+              [Input('signal', 'data')],
+              [State('current_city', 'children'),
+              State('cities-dropdown', 'value')])
+def clean_graph(data, current_city, city):
 
+    # if city == current_city:
+    #     print('here')
+    #     pass
+    # else:
     if data is not None:
         print('clean')
         return html.Div(id='map-inner')
+
+@app.callback(Output('current_city', 'children'),
+              [Input('map-keeper', 'children')],
+              [State('cities-dropdown', 'value')])
+def update_current_city(ping, city):
+    print('updating current city')
+    return city
 
 @app.callback(Output("map-inner", "children"),
                 [Input('date_range', 'data')],
@@ -229,17 +238,16 @@ def clean_graph(data):
                State('cities-dropdown', 'value')])
 def update_graph(useless, df, problem, city):
 
-    grey = [1,1,1]
+    grey = [1,195/225,188/255]
     red = [1.0, 0.0, 0.0]
 
     df = read_json(df)
-    # import time
-    # time.sleep(2)
 
     data = to_deck_line(df, 'segment', 'with_jam_prop', grey, red, 
                         3, width_low=None, width_high=None,
                         legend_column='with_jam_prop', 
-                        legend_title='Proportional Time Jammed (%)')
+                        legend_title='Proportional Time Jammed (%)',
+                        color_steps=4)
 
     viewstate = get_city_viewport(city)
 

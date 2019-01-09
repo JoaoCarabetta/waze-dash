@@ -30,8 +30,8 @@ pytz==2018.7
 requests==2.21.0
 retrying==1.3.3
 six==1.12.0
--e git+https://github.com/JoaoCarabetta/waze-dash.git@012d24b4421b7833ca024d59a68a61c15ef21338#egg=slapdash
 SQLAlchemy==1.2.15
 traitlets==4.3.2
 urllib3==1.24.1
 Werkzeug==0.14.1
+gunicorn

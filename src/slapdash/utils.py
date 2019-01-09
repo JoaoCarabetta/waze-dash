@@ -58,11 +58,11 @@ def to_deck_line(df, segment_column,
                  color_column, color_low, color_high, 
                  width_column, width_low, width_high,
                  legend_column, legend_title,
-                 color_opacity=1, color_steps=10):
+                 color_opacity=1, color_steps=10, filter_greater_than_color_column=5):
     
     if isinstance(color_column, str):
         color_true = True
-        color_max_value = df[color_column].max()
+        color_max_value = 100 #df[color_column].max()
         color_range = list(Color(rgb=color_low).range_to(Color(rgb=color_high), color_steps))
         color_range = list(map(lambda hues: list(map(lambda x: x * 255, hues.rgb)), color_range))
 
@@ -117,10 +117,11 @@ def to_deck_line(df, segment_column,
         segment = record[column_map[segment_column]]
         result = {'sourcePosition': [segment[0]['x'], segment[0]['y']], 
              'targetPosition': [segment[1]['x'], segment[1]['y']], 
-             'color': to_color_range(record[column_map[color_column]], color_low, color_high) if color_true else color_column,
+             'color': to_color_range(record[column_map[color_column]], color_low, color_high, color_steps=color_steps) if color_true else color_column,
              'width': to_width_range(record[column_map[width_column]]) if width_true else width_column,
              'legend_title': legend_title,
              'legend_data': to_legend_data(record[column_map[legend_column]]) if legend_true else legend_column}     
         return result
     
-    return list(map(lambda x: inside(x, column_map), records))
+    return list(map(lambda x: inside(x, column_map), 
+                filter(lambda x: x[column_map[color_column]] > filter_greater_than_color_column, records)))

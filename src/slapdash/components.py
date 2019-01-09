@@ -92,13 +92,13 @@ def Navbar(
             children=dcc.Link(text, href=href, className='nav-link')
         ))
 
-    return html.Nav(
-        className=navbar,
-        children=[
-            html.Ul(
-                className=nav,
-                children=nav_items
-            ),
-        ],
-        **kwargs,
-    )
+    # return html.Nav(
+    #     className=navbar,
+    #     children=[
+    #         html.Ul(
+    #             className=nav,
+    #             children=nav_items
+    #         ),
+    #     ],
+    #     **kwargs,
+    # )
